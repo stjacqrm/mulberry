@@ -1,0 +1,211 @@
+%
+\documentclass[12pt]{article}
+\usepackage{Sweave}
+\usepackage{pdflscape}
+\usepackage{geometry}
+\usepackage{longtable}
+\geometry{letterpaper, portrait, margin=1in}
+\SweaveOpts{height=6,width=10,echo=FALSE}
+\setkeys{Gin}{width=6in}
+\usepackage[format=hang,font=small,labelfont=bf]{caption}
+\usepackage[dvipsnames]{xcolor}
+
+\title{AMR gene Analysis, Characterization \& \protect\\ Vizualization \protect\\[0.2in]Mulberry Analysis for:\protect\\"Title goes here"}
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+<<echo=FALSE>>=
+
+#----------------------
+# Input Files
+#----------------------
+
+library("optparse")
+
+option_list = list(
+  make_option(c("-a", "--ar_prediction"), type="character", default="./ar_prediction.tsv",
+              help="analysis results file [default= %default]", metavar="character"),
+  make_option(c("-m", "--message"), type="character", default="",
+              help="optional conclusions text [default= %default]", metavar="character"))
+
+
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
+seq.results.file <- opt$ar_prediction
+message <- opt$message
+
+  seq.results <- read.delim(seq.results.file,header=T,sep = "\t",stringsAsFactors=F,
+    colClasses = c(rep("character", 22)))
+    # Cols - yes
+
+
+#------------------------------
+# Plotting libraries
+#------------------------------
+library(ggplot2)
+library(ggsci)
+library(cowplot)
+library(grid)
+library(gridExtra)
+
+@
+\newpage
+\section{Overview}
+\setlength\floatsep{0pt}
+\setlength\intextsep{0pt}
+
+The Mulberry analysis report provides an overview of AMR gene prevalence data.
+@
+\vspace{20pt}
+
+
+@
+\section{Results}
+<<echo=FALSE,results=tex>>=
+
+cat(paste("AMR genes are listed in Table 1. \n", sep=""))
+@
+\vspace{20pt}
+
+@
+\subsection{AMR Analysis}
+\begin{small}
+<<echo=FALSE,results=tex>>=
+
+cat(paste("AMR genes are listed in Table 1. \n", sep=""))
+@
+\vspace{20pt}
+<<label=xtable2,echo=FALSE,results=tex>>=
+
+#---------------------------
+# Table 2 - Analysis Summary
+#---------------------------
+library(xtable)
+library(stringr)
+library(tidyverse)
+library(dplyr)
+library(treemap)
+library(sunburstR)
+library(purrr)
+library(readr)
+library(data.table)
+
+#data <- read.csv(seq.results, sep="\t", header=TRUE)
+names(seq.results) <- str_replace_all(names(seq.results), c(" " = "_"))
+data <- seq.results
+write.csv(data,"first.csv")
+#clean the data
+#names(data) <- str_replace_all(names(data), c(" " = "_"))
+
+data <- data %>%
+  select(Contig_id,Element_type,Class, Subclass,Gene_symbol)
+data$Class <- sub("^$", "N", data$Class)
+data$Subclass <- sub("^$", "N", data$Subclass)
+#View(data)
+
+colnames(data) <- c("Contig","Element_type","Class", "Subclass", "Gene")
+data$Contig<-gsub("-","_",as.character(data$Contig))
+data$Element_type<-gsub("-","_",as.character(data$Element_type))
+data$Class<-gsub("-","_",as.character(data$Class))
+data$Subclass<-gsub("-","_",as.character(data$Subclass))
+data$Gene<-gsub("-","_",as.character(data$Gene))
+
+#calculate percentages
+table <- round(100*prop.table(table(data$Gene)))
+table <- as.data.frame(table)
+table <- table %>%
+  select(Var1,Freq)
+colnames(table) <- c("Gene","Frequency_percent")
+#View(table)
+new_df <- left_join(data,table)
+
+x <- xtable(new_df)
+write.csv(new_df,"mulberry_output.csv",row.names = FALSE)
+#colnames(x) <- c("Sample","Lineage","Scorpio Call","Status")
+next.table <- 1
+align(x) <- xalign(x)
+digits(x) <- xdigits(x)
+display(x) <- xdisplay(x)
+print(xtable(x, caption = "A summary of the AMR genes.",
+  label = "tab:one"), hline.after=c(-1,0), tabular.environment = "longtable", caption.placement = "top", include.rownames=FALSE)
+next.table <- next.table + 1
+
+@
+\end{small}
+
+@
+\subsection{AMR Frequency}
+\begin{small}
+#<<echo=FALSE,results=figure>>=
+
+cat(paste("Deviations from the reference genome are listed in Table 2. If there are no deviations between the Blind and PT samples and the reference genome, this scientist demonstrates proficiency in the sequencing of SARS-CoV-2 using the tested protocol. \n", sep=""))
+@
+\vspace{20pt}
+
+
+@
+\begin{figure}[!htb]
+\begin{center}
+<<echo=FALSE,fig=TRUE,height=10>>=
+
+#---------------------------
+# Table 1 - VADR status table
+#---------------------------
+library(xtable)
+library(stringr)
+library(dplyr)
+library(sjPlot)
+
+data <- seq.results
+
+#clean the data
+names(data)<-str_replace_all(names(data), c(" " = "_"))
+
+data<- data %>%
+  select(Contig_id,Element_type,Class, Subclass,Gene_symbol)
+data$Class <- sub("^$", "N", data$Class)
+data$Subclass <- sub("^$", "N", data$Subclass)
+#View(data)
+
+colnames(data) <- c("Contig","Element_type","Class", "Subclass", "Gene")
+data$Contig<-gsub("-","_",as.character(data$Contig))
+data$Element_type<-gsub("-","_",as.character(data$Element_type))
+data$Class<-gsub("-","_",as.character(data$Class))
+data$Subclass<-gsub("-","_",as.character(data$Subclass))
+data$Gene<-gsub("-","_",as.character(data$Gene))
+
+#calculate percentages
+table <- round(100*prop.table(table(data$Gene)))
+table <- as.data.frame(table)
+table <- table %>%
+  select(Var1,Freq)
+colnames(table) <- c("Gene","Frequency_percent")
+#View(table)
+new_df <- left_join(data,table)
+#write.csv(new_df,"mulberry_output.csv",row.names = FALSE)
+
+# Reformat data for the sunburstR package
+data <- new_df %>%
+  filter(Class != "") %>%
+  mutate(path = paste(Class, Subclass,Gene, sep="-")) %>%
+  dplyr::select(path, Frequency_percent)
+
+# Plot
+p <- sunburst(data, legend=FALSE)
+
+@
+\captionsetup{skip=5pt}
+\caption{AMR gene type percentages.}
+\end{center}
+\end{figure}
+
+
+@
+\end{small}
+
+@
+\end{document}
+\end{small}
