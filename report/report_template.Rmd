@@ -93,12 +93,16 @@ library(purrr)
 library(readr)
 library(data.table)
 
-#data <- read.csv(seq.results, sep="\t", header=TRUE)
-names(seq.results) <- str_replace_all(names(seq.results), c(" " = "_"))
 data <- seq.results
-write.csv(data,"first.csv")
+#names(seq.results) <- str_replace_all(names(seq.results), c(" " = "_"))
+#names(data) <- gsub(" ", "_", names(data))
+#colnames(seq.results) <- gsub(" ", "_", colnames(seq.results))
+#write.csv(seq.results,"first.csv",row.names=FALSE)
+#data < - seq.results
+
 #clean the data
-#names(data) <- str_replace_all(names(data), c(" " = "_"))
+names(data) <- str_replace_all(names(data), c(" " = "_"))
+write.csv(data,"first.csv",row.names=FALSE)
 
 data <- data %>%
   select(Contig_id,Element_type,Class, Subclass,Gene_symbol)

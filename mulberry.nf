@@ -162,7 +162,7 @@ process concat_amr_files {
   publishDir "${params.outdir}/results",mode:'copy'
 
   input:
-  set val(name), file(ar) from ar_predictions.collect()
+  file(ar) from ar_predictions.collect()
 
   output:
   file("ar_prediction.tsv") into ar_output
