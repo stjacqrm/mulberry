@@ -93,19 +93,16 @@ library(purrr)
 library(readr)
 library(data.table)
 
-data <- seq.results
-#names(seq.results) <- str_replace_all(names(seq.results), c(" " = "_"))
-#names(data) <- gsub(" ", "_", names(data))
-#colnames(seq.results) <- gsub(" ", "_", colnames(seq.results))
-#write.csv(seq.results,"first.csv",row.names=FALSE)
-#data < - seq.results
+data <- as.data.frame.matrix(seq.results)
 
-#clean the data
-names(data) <- str_replace_all(names(data), c(" " = "_"))
-write.csv(data,"first.csv",row.names=FALSE)
+colnames(data) = c("Protein identifier", "Contig id", "Start", "Stop","Strand","Gene symbol","Sequence name","Scope","Element type","Element subtype","Class","Subclass","Method","Target Length","Reference sequence length","Coverage of reference sequence","Identity to reference sequence","Alignment length","Accession of closest sequence","Name of closest sequence","HMM id","HMM description")
+
+colnames(data) <- gsub(" ", "_", colnames(data))
+write.table(data,"first1.csv",sep=",",row.names=FALSE,quote=FALSE)
+
 
 data <- data %>%
-  select(Contig_id,Element_type,Class, Subclass,Gene_symbol)
+  select(Contig_id,Element_type,Class,Subclass,Gene_symbol)
 data$Class <- sub("^$", "N", data$Class)
 data$Subclass <- sub("^$", "N", data$Subclass)
 #View(data)
@@ -127,8 +124,7 @@ colnames(table) <- c("Gene","Frequency_percent")
 new_df <- left_join(data,table)
 
 x <- xtable(new_df)
-write.csv(new_df,"mulberry_output.csv",row.names = FALSE)
-#colnames(x) <- c("Sample","Lineage","Scorpio Call","Status")
+write.table(new_df,"mulberry_output.csv",sep=",",row.names = FALSE,quote=FALSE)
 next.table <- 1
 align(x) <- xalign(x)
 digits(x) <- xdigits(x)
@@ -161,15 +157,17 @@ cat(paste("Deviations from the reference genome are listed in Table 2. If there 
 library(xtable)
 library(stringr)
 library(dplyr)
-library(sjPlot)
 
-data <- seq.results
+data <- as.data.frame.matrix(seq.results)
 
-#clean the data
-names(data)<-str_replace_all(names(data), c(" " = "_"))
+colnames(data) = c("Protein identifier", "Contig id", "Start", "Stop","Strand","Gene symbol","Sequence name","Scope","Element type","Element subtype","Class","Subclass","Method","Target Length","Reference sequence length","Coverage of reference sequence","Identity to reference sequence","Alignment length","Accession of closest sequence","Name of closest sequence","HMM id","HMM description")
 
-data<- data %>%
-  select(Contig_id,Element_type,Class, Subclass,Gene_symbol)
+colnames(data) <- gsub(" ", "_", colnames(data))
+write.table(data,"first1.csv",sep=",",row.names=FALSE,quote=FALSE)
+
+
+data <- data %>%
+  select(Contig_id,Element_type,Class,Subclass,Gene_symbol)
 data$Class <- sub("^$", "N", data$Class)
 data$Subclass <- sub("^$", "N", data$Subclass)
 #View(data)
@@ -189,7 +187,7 @@ table <- table %>%
 colnames(table) <- c("Gene","Frequency_percent")
 #View(table)
 new_df <- left_join(data,table)
-#write.csv(new_df,"mulberry_output.csv",row.names = FALSE)
+
 
 # Reformat data for the sunburstR package
 data <- new_df %>%
